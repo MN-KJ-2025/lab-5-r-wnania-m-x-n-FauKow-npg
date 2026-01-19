@@ -8,6 +8,11 @@
 #     - Weryfikujące poprawność wyników dla prawidłowych danych wejściowych.
 # =============================================================================
 import numpy as np
+import scipy as sp
+from scipy import linalg
+from datetime import datetime
+import pickle
+from typing import Union, List, Tuple
 
 
 def spare_matrix_Abt(m: int, n: int) -> tuple[np.ndarray, np.ndarray] | None:
@@ -24,7 +29,14 @@ def spare_matrix_Abt(m: int, n: int) -> tuple[np.ndarray, np.ndarray] | None:
             - Wektor b (m,).
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
+    if not (isinstance(m, int) and isinstance(n, int)):
+        return None
+    if m < 1 or n < 1:
+        return None
+    t = np.linspace(0, 1, m, endpoint=True)
+    b = np.cos(4 * t)
+    A = np.fliplr(np.vander(t, n))
+    return A, b
 
 
 def square_from_rectan(
@@ -44,7 +56,16 @@ def square_from_rectan(
             - Wektor b_new (n,).
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
+    try:
+        if not isinstance(A, np.ndarray) or not isinstance(b, np.ndarray):
+            raise ValueError
+        if A.shape[0] != b.shape[0]:
+            raise ValueError
+        aa = np.transpose(A) @ A
+        bb = np.transpose(A) @ b
+        return aa, bb
+    except ValueError:
+        return None
 
 
 def residual_norm(A: np.ndarray, x: np.ndarray, b: np.ndarray) -> float | None:
@@ -60,4 +81,16 @@ def residual_norm(A: np.ndarray, x: np.ndarray, b: np.ndarray) -> float | None:
         (float): Wartość normy residuum dla podanych parametrów.
         Jeżeli dane wejściowe są niepoprawne funkcja zwraca `None`.
     """
-    pass
+    if not (isinstance(A, np.ndarray) and isinstance(x, np.ndarray) and isinstance(b, np.ndarray)):
+        return None
+    if A.ndim != 2:
+        return None
+    if x.ndim != 1:
+        return None
+    if b.ndim != 1:
+        return None
+    if A.shape[1] != x.shape[0]:
+        return None
+    if A.shape[0] != b.shape[0]:
+        return None
+    return np.linalg.norm(b - (A @ x))
